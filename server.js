@@ -6,6 +6,8 @@ const nodemailer = require("nodemailer");
 const { gerarPassado } = require("./geradorDePassados");
 
 const app = express();
+// Na Vercel o app fica atrás de proxy; sem isso o rate limit enxerga o IP errado
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "50kb" }));
 // Serve SÓ a pasta public
 app.use(express.static(path.join(__dirname, "public")));
@@ -50,6 +52,11 @@ app.post("/api/gerar-passado", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`Rodando em http://localhost:${process.env.PORT || 3000}`)
-);
+// Local: sobe o servidor normalmente. Na Vercel: apenas exporta o app.
+if (require.main === module) {
+  app.listen(process.env.PORT || 3000, () =>
+    console.log(`Rodando em http://localhost:${process.env.PORT || 3000}`)
+  );
+}
+
+module.exports = app;
